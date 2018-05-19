@@ -170,12 +170,30 @@ namespace Actions
             switch (data.r)
             {
                 case Response.None:
-                    string output = string.Empty;
+                    List<ListColumn> columns = new List<ListColumn>();
+                    List<string> modules = new List<string>();
+                    List<ListElement> status = new List<ListElement>();
+
+                    foreach(ModuleType m in windowManager.GetModules())
+                    {
+                        modules.Add(m.ToString());
+                        status.Add(new ListElement(windowManager.ModuleToStatus[m].ToString()));
+                        if (windowManager.ModuleToStatus[m] == Status.Used)
+                        {
+                            status[status.Count - 1].color = new Color(1, 0, 0, 0.5f);
+                        }
+                    }
+
+                    columns.Add(new ListColumn("Status", status));
+
+                    shell.PrintList(columns, modules);
+
+                    /*string output = string.Empty;
                     foreach (ModuleType module in windowManager.GetModules())
                     {
                         output += "\t\n" + module.ToString() + " - " + windowManager.ModuleToStatus[module].ToString();
                     }
-                    shell.Print(output.Substring(2));
+                    shell.Print(output.Substring(2));*/
                     return Response.Finished;
             }
             return Response.Finished;

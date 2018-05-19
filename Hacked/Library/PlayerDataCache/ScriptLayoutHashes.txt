@@ -1,6 +1,6 @@
 WindowsStandalone
 PlayerPath?
-C:/Users/Alexander/Documents/repos/Unity/Hacked/Build/Build.exe
+C:/Users/Alexander/Documents/repos/Unity/Windows/Hacked/Build/Build.exe
 SceneListBegin?
 Assets/Scenes/main.unity
 SceneListEnd?
@@ -87,6 +87,7 @@ f61c0793411f10cf5fbfa1473fef5ef2 UnityEngine.UI.dll:UnityEngine.UI.ToggleGroup
 07d67e923b7e4b5f630b7183f0ac6c3b Assembly-CSharp.dll:.OptionsManager
 c3ebb78b975d6aa23f91e18f8dbe1cf7 Assembly-CSharp.dll:.WindowManager
 05524b8f659e7bfe5756d1335fec24ba Assembly-CSharp.dll:.MainMenuManager
+05524b8f659e7bfe5756d1335fec24ba Assembly-CSharp.dll:.UnlockedPanelManager
 05524b8f659e7bfe5756d1335fec24ba UnityEngine.Timeline.dll:UnityEngine.Timeline.ActivationPlayableAsset
 cf455f7a806648c6ed4c7d3e3f8a0e03 UnityEngine.Timeline.dll:UnityEngine.Timeline.ActivationTrack
 13bdb7c23815c33a33b37b0ba8dd39be UnityEngine.Timeline.dll:UnityEngine.Timeline.AnimationPlayableAsset
@@ -158,4 +159,5 @@ c2275a8bfbb9f9942cad75ecdfded41d UnityEngine.HoloLens.dll:UnityEngine.XR.WSA.Spa
 9de3a22eca9aefadba2d10d5987cefe3 UnityEngine.SpatialTracking.dll:UnityEngine.SpatialTracking.TrackedPoseDriver
 05524b8f659e7bfe5756d1335fec24ba Assembly-CSharp.dll:.QuitManager
 29270b13fa2c8ab94bb772d143f3f5bb Assembly-CSharp.dll:.SlideAnimation
-ff7b421086ebe2f375ae7d4e528ae6d5 Assembly-CSharp.dll:.ShellManager
+9d946391c54fa8644d02a74d8b16e6b4 Assembly-CSharp.dll:.ShellManager
+bf96f702d249f0797c9fa42ba4e4750b Assembly-CSharp.dll:.Row

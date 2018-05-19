@@ -570,6 +570,10 @@ MonoBehaviour:
   content: {fileID: 1567614592590790}
   viewPort: {fileID: 1050524523941094}
   printText: {fileID: 1893636306268042, guid: df14ad3992d36d44a91ac33fd19764ef, type: 2}
+  printList: {fileID: 1473725765117036, guid: 90426fe7f9c1f57409d129f94659ea65, type: 2}
+  row: {fileID: 1066061395954796, guid: 7813a648e499e3d47985c2ad42d89584, type: 2}
+  column: {fileID: 1816309862456784, guid: 8a954ace7b986eb47b57b70fa93a6929, type: 2}
+  listName: {fileID: 1368897055460886, guid: ef105eafe5584f144ae1cb6c5f3a9ad3, type: 2}
 --- !u!114 &114919464773175350
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -608,7 +612,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114057831699197674}
   m_HandleRect: {fileID: 224332757804105292}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -821,7 +825,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000002861, y: 0.000015258789}
+  m_AnchoredPosition: {x: 0.0000028609938, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000014901161}
 --- !u!224 &224783776052010574

@@ -33,6 +33,10 @@ public class ShellManager : MonoBehaviour {
 
     [Header("Prefabs")]
     public GameObject printText;
+    public GameObject printList;
+    public GameObject row;
+    public GameObject column;
+    public GameObject listName;
 
     private bool HasStoppedInputting;
     private List<string> inputHistory = new List<string>();
@@ -181,6 +185,43 @@ public class ShellManager : MonoBehaviour {
         }
     }
 
+    public void PrintList(List<ListColumn> columns, List<string> rows)
+    {
+        int width = columns.Count;
+
+        int height = rows.Count;
+        foreach(ListColumn lc in columns)
+        {
+            if (lc.values.Count == height) continue;
+
+            Debug.LogError("List Column has " + lc.values.Count + " values but should have " + height + " values.");
+        }
+
+        GameObject list = Instantiate(printList, content.transform);
+
+        Transform rowNames = list.transform.GetChild(2);
+        Transform columnNames = list.transform.GetChild(1);
+        Transform data = list.transform.GetChild(0);
+
+        foreach(string name in rows)
+        {
+            Instantiate(listName, rowNames).GetComponent<Text>().text = name;
+        }
+
+        foreach(ListColumn column in columns)
+        {
+            Instantiate(listName, columnNames).GetComponent<Text>().text = column.header;
+
+            GameObject c = Instantiate(this.column, data);
+            foreach(ListElement element in column.values)
+            {
+                Text e = Instantiate(row, c.transform).GetComponent<RectTransform>().GetChild(0).GetComponent<Text>();
+                e.text = element.text;
+                e.color = element.color;
+            }
+        }
+    }
+
     public void ScrollConsole()
     {
         //Make the command line the bottom most thing
@@ -277,6 +318,34 @@ public class CommandHelper {
     public static string GetDescriptionOf(Command c, MachineType m)
     {
         return commandToDoc[c].descriptions[commandToDoc[c].machines.IndexOf(m)];
+    }
+}
+
+public class ListColumn
+{
+    public string header;
+    public List<ListElement> values;
+
+    public ListColumn(string header, List<ListElement> values)
+    {
+        this.header = header;
+        this.values = values;
+    }
+}
+
+public class ListElement
+{
+    public string text;
+    public Color color;
+
+    public ListElement(string text, bool defaultColor = true, Color color = new Color())
+    {
+        this.color = color;
+        if (defaultColor)
+        {
+            this.color = new Color(0, 1, 0.007843138f, 0.4980392f);
+        }
+        this.text = text;
     }
 }
 
