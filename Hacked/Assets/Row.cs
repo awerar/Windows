@@ -15,3 +15,11 @@ public class Row : MonoBehaviour {
         row.preferredHeight = text.GetComponent<Text>().preferredHeight+4;
     }
 }
+
+//#===##===##===#
+//| X || O || X |
+//#===##===##===#
+//| O || X || O |
+//#===##===##===#
+//| O || X || X |
+//#===##===##===#

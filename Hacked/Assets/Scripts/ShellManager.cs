@@ -7,7 +7,7 @@ using System.Linq;
 
 public enum Command
 {
-    Help, Windows, Modules, Load, Parameter_error, Name_error, Unload, Load_database, Back, Files, Open
+    Help, Windows, Modules, Load, Parameter_error, Name_error, Unload, Load_database, Back, Files, Open, Error
 }
 
 public enum CommandType
@@ -41,6 +41,12 @@ public class ShellManager : MonoBehaviour {
     private bool HasStoppedInputting;
     private List<string> inputHistory = new List<string>();
     private int currentHistoryIndex = -1;
+
+    [Header("Texts")]
+    [TextArea]
+    public string nameErrorText;
+    [TextArea]
+    public string paramErrorText;
 
     private Machine currentMachine;
     public Machine CurrentMachine {
@@ -101,17 +107,8 @@ public class ShellManager : MonoBehaviour {
         commandText.text = InputText;
         commandUser.text = InputUser;
 
-        ActionData data = new ActionData(InputText, this);
-        while (data.r != Response.Finished)
-        {
-            Action action = Action.Create(data, this, windowManager, databaseMan);
-            data = new ActionData(input.text, this, action.Execute());
-        }
-
-        if (Action.Create(data, this, windowManager, databaseMan).GetType() != typeof(Actions.Unload))
-        {
-            (Action.CommandToAction[Command.Unload] as Actions.Unload).timesTriedToUnloadOnShell = 0;
-        }
+        CommandData c = ParseCommand(commandText.text);
+        ExecuteCommand(c);
 
         ScrollConsole();
 
@@ -119,6 +116,225 @@ public class ShellManager : MonoBehaviour {
 
         input.ActivateInputField();
     }
+
+    /// <summary>
+    /// Takes a string as an input and tries to turn divide into a command and parametors.
+    /// </summary>
+    /// <param name="rawData">The string to parse</param>
+    /// <returns>A CommandData. If there is an error during the parse the CommandData will have Command.Error as its command</returns>
+    public CommandData ParseCommand(string rawData)
+    {
+        List<string> choppedData = new List<string>(rawData.Split(' '));
+        CommandData command = new CommandData();
+
+        try
+        {
+            command.c = (Command)Enum.Parse(typeof(Command), FormatString(choppedData[0]));
+            choppedData.RemoveAt(0);
+        }
+        catch (ArgumentException)
+        {
+            Print(nameErrorText);
+            return CommandData.Error;
+        }
+
+        if (!CommandHelper.CommandIsOfType(command.c, CurrentMachine.type))
+        {
+            Print(nameErrorText);
+            return CommandData.Error;
+        }
+
+        if (choppedData.Count != CommandHelper.GetParametersOf(command.c).Count)
+        {
+            Print(paramErrorText);
+            return CommandData.Error;
+        }
+        else
+        {
+            command.parameters = choppedData;
+        }
+
+        return command;
+    }
+
+    public void ExecuteCommand(CommandData commandData)
+    {
+        if (commandData.c == Command.Error) return;
+
+        List<string> parameters = commandData.parameters;
+        Command c = commandData.c;
+        
+
+        //WARNING! DON'T UNCOLLAPSE! ALL CODE FOR EACH OF THE COMMANDS INSIDE!
+        switch (c)
+        {
+            case Command.Help:
+                string str = string.Empty;
+                IEnumerable<string> sNames;
+                IEnumerable<string> sDocumentation;
+
+                sNames = CommandHelper.GetAllNamesOfType(CommandType.Basic);
+                sDocumentation = CommandHelper.GetAllDocumentationOfType(CommandType.Basic);
+                Print("=== Basic Commands ===\n", true);
+
+                List<ListElement> names = new List<ListElement>();
+                List<ListElement> documentation = new List<ListElement>();
+
+                foreach(string n in sNames)
+                {
+                    names.Add(new ListElement(n));
+                }
+
+                foreach (string d in sDocumentation)
+                {
+                    documentation.Add(new ListElement(d));
+                }
+
+                List<ListColumn> columns = new List<ListColumn>();
+                columns.Add(new ListColumn("Name", names));
+                columns.Add(new ListColumn("Description", documentation));
+
+                PrintList(columns);
+                
+                if (CurrentMachine.type == MachineType.Shell)
+                {
+                    Print("\n === For a list of Advanced Commands visit the help module === ", true);
+                }
+                break;
+
+            case Command.Modules:
+                columns = new List<ListColumn>();
+                List<ListElement> modules = new List<ListElement>();
+                List<ListElement> status = new List<ListElement>();
+
+                foreach (ModuleType m in windowManager.GetModules())
+                {
+                    modules.Add(new ListElement(m.ToString()));
+                    status.Add(new ListElement(windowManager.ModuleToStatus[m].ToString()));
+                    if (windowManager.ModuleToStatus[m] == Status.Used)
+                    {
+                        status[status.Count - 1].color = new Color(1, 0, 0, 0.5f);
+                        modules[modules.Count - 1].color = new Color(1, 0, 0, 0.5f);
+                    }
+                }
+
+                columns.Add(new ListColumn("Name", modules));
+                columns.Add(new ListColumn("Status", status));
+
+                PrintList(columns);
+                break;
+
+            case Command.Windows:
+                string output = string.Empty;
+                foreach (int window in windowManager.GetWindows())
+                {
+                    output += "\t\n" + window + " - " + windowManager.WindowToStatus[windowManager.IndexToWindow[window]].ToString();
+                }
+                Print(output.Substring(2));
+                break;
+
+            case Command.Load:
+                string mString = FormatString(parameters[0]);
+
+                ModuleType mod = ModuleType.None;
+                try
+                {
+                    mod = (ModuleType)Enum.Parse(typeof(ModuleType), mString);
+                }
+                catch (ArgumentException)
+                {
+                    Print("The module requested is not avalible. Type 'Modules' for a list of avalible modules.");
+                    return;
+                }
+
+                if (!windowManager.ModuleIsOpenableByPlayer(mod) || windowManager.ModuleToStatus[mod] == Status.Used)
+                {
+                    Print("The module requested is not avalible. Type 'Modules' for a list of avalible modules.");
+                    return;
+                }
+
+                int w = int.Parse(parameters[1]);
+
+                if (!windowManager.WindowAvalible(w))
+                {
+                    Print("The requested window is currently in use or doesn't exist. Type 'Windows' for a list of avalible windows");
+                    return;
+                }
+
+                windowManager.LoadModuleOnWindow(mod, w);
+
+                Print("The requested module " + parameters[0] + " has succesfully been loaded on window " + parameters[1] + ".");
+                break;
+
+            case Command.Unload:
+                if (windowManager.WindowAvalible(int.Parse(parameters[0])))
+                {
+                    Print("Window either doesn't exist or already has module loaded on it. For more info, tpye 'help' or visit the 'commands' page in the shell help menu.");
+                    return;
+                }
+
+                if (windowManager.WindowToModule[windowManager.IndexToWindow[int.Parse(parameters[0])]] == ModuleType.Shell)
+                {
+                    Print("You can't unload the shell from shell!");
+                    return;
+                }
+
+                windowManager.UnloadOnWindow(int.Parse(parameters[0]));
+                break;
+
+            case Command.Load_database:
+                string name = parameters[0];
+
+                if (!databaseMan.HasDatabaseByName(name))
+                {
+                    Print("The database you are trying to access doesn't exist. Did you spell the name right?");
+                    return;
+                }
+
+                CurrentMachine = databaseMan.GetDataBase(name);
+
+                Print("You are now in database " + parameters[0] + ". To get back, type the command 'Back'.");
+                break;
+
+            case Command.Back:
+                CurrentMachine = new Shell();
+                Print("You're now in the shell.");
+                break;
+
+            case Command.Files:
+                if ((CurrentMachine as DataBase).files.Length == 0)
+                {
+                    Print("Could not list the files on this database since it doesn't have any.");
+                    return;
+                }
+
+                string tempS = string.Empty;
+
+                foreach (File file in (CurrentMachine as DataBase).files)
+                {
+                    tempS += file.name + "\n";
+                }
+
+                Print(tempS);
+                break;
+
+            case Command.Open:
+                File? fn = (CurrentMachine as DataBase).GetFile(parameters[0]);
+
+                if (fn == null)
+                {
+                    Print("Could not open the requested file since there's no file named " + parameters[0] + ". Did you misspel the name?");
+                    return;
+                }
+
+                File f = fn.Value;
+
+                Print("==== File begin ====", true);
+                Print(f.file.text);
+                Print("==== File end ====\n", true);
+                break;
+        }
+    }   
 
     public void ActivateInputField()
     {
@@ -185,35 +401,19 @@ public class ShellManager : MonoBehaviour {
         }
     }
 
-    public void PrintList(List<ListColumn> columns, List<string> rows)
+    public void PrintList(List<ListColumn> columns)
     {
-        int width = columns.Count;
-
-        int height = rows.Count;
-        foreach(ListColumn lc in columns)
-        {
-            if (lc.values.Count == height) continue;
-
-            Debug.LogError("List Column has " + lc.values.Count + " values but should have " + height + " values.");
-        }
-
         GameObject list = Instantiate(printList, content.transform);
 
-        Transform rowNames = list.transform.GetChild(2);
         Transform columnNames = list.transform.GetChild(1);
         Transform data = list.transform.GetChild(0);
 
-        foreach(string name in rows)
-        {
-            Instantiate(listName, rowNames).GetComponent<Text>().text = name;
-        }
-
-        foreach(ListColumn column in columns)
+        foreach (ListColumn column in columns)
         {
             Instantiate(listName, columnNames).GetComponent<Text>().text = column.header;
 
             GameObject c = Instantiate(this.column, data);
-            foreach(ListElement element in column.values)
+            foreach (ListElement element in column.values)
             {
                 Text e = Instantiate(row, c.transform).GetComponent<RectTransform>().GetChild(0).GetComponent<Text>();
                 e.text = element.text;
@@ -279,6 +479,17 @@ public class CommandHelper {
         return GetNameOf(c) + parameters + ": " + GetDescriptionOf(c, m);
     }
 
+    public static IEnumerable<string> GetAllDocumentationOfType(CommandType type, MachineType machine = MachineType.Shell)
+    {
+        foreach (KeyValuePair<Command, CommandDocumentation> kvp in commandToDoc)
+        {
+            if ((kvp.Value.type == type || type == CommandType.None) && kvp.Value.machines.Contains(machine))
+            {
+                yield return GetDescriptionOf(kvp.Key, machine);
+            }
+        }
+    }
+
     public static bool CommandIsOfType(Command c, MachineType m)
     {
         List<MachineType> types = commandToDoc[c].machines;
@@ -294,7 +505,7 @@ public class CommandHelper {
         return false;
     }
 
-    public static IEnumerable<string> GetAllDocumentationOfType(CommandType type, MachineType machine = MachineType.Shell)
+    public static IEnumerable<string> GetAllFullDocumentationOfType(CommandType type, MachineType machine = MachineType.Shell)
     {
         foreach (KeyValuePair<Command, CommandDocumentation> kvp in commandToDoc)
         {
@@ -308,6 +519,17 @@ public class CommandHelper {
     public static string GetNameOf(Command c)
     {
         return commandToDoc[c].name;
+    }
+
+    public static IEnumerable<string> GetAllNamesOfType(CommandType type, MachineType machine = MachineType.Shell)
+    {
+        foreach (KeyValuePair<Command, CommandDocumentation> kvp in commandToDoc)
+        {
+            if ((kvp.Value.type == type || type == CommandType.None) && kvp.Value.machines.Contains(machine))
+            {
+                yield return GetNameOf(kvp.Key);
+            }
+        }
     }
 
     public static List<string> GetParametersOf(Command c)
@@ -364,6 +586,28 @@ public class CommandDocumentation
         this.parameters = new List<string>(parameters);
         this.type = type;
         this.machines = machines;
+    }
+}
+
+public class CommandData
+{
+    public List<string> parameters;
+    public Command c;
+
+    public static CommandData Error {
+        get {
+            return new CommandData(new List<string>(), Command.Error);
+        }
+    }
+
+    public CommandData(List<string> parameters, Command c)
+    {
+        this.c = c;
+        this.parameters = parameters;
+    }
+
+    public CommandData () {
+
     }
 }
 

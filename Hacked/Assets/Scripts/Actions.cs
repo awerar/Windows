@@ -105,12 +105,12 @@ namespace Actions
                     switch (shell.CurrentMachine.type)
                     {
                         case MachineType.Shell:
-                            documentetion = CommandHelper.GetAllDocumentationOfType(CommandType.Basic);
+                            documentetion = CommandHelper.GetAllFullDocumentationOfType(CommandType.Basic);
                             shell.Print("=== Basic Commands ===\n", true);
                             break;
 
                         case MachineType.Database:
-                            documentetion = CommandHelper.GetAllDocumentationOfType(CommandType.None, MachineType.Database);
+                            documentetion = CommandHelper.GetAllFullDocumentationOfType(CommandType.None, MachineType.Database);
                             shell.Print("=== Commands ===\n", true);
                             break;
                     }
@@ -171,12 +171,12 @@ namespace Actions
             {
                 case Response.None:
                     List<ListColumn> columns = new List<ListColumn>();
-                    List<string> modules = new List<string>();
+                    List<ListElement> modules = new List<ListElement>();
                     List<ListElement> status = new List<ListElement>();
 
                     foreach(ModuleType m in windowManager.GetModules())
                     {
-                        modules.Add(m.ToString());
+                        modules.Add(new ListElement(m.ToString()));
                         status.Add(new ListElement(windowManager.ModuleToStatus[m].ToString()));
                         if (windowManager.ModuleToStatus[m] == Status.Used)
                         {
@@ -184,9 +184,10 @@ namespace Actions
                         }
                     }
 
+                    columns.Add(new ListColumn("Name", modules));
                     columns.Add(new ListColumn("Status", status));
 
-                    shell.PrintList(columns, modules);
+                    shell.PrintList(columns);
 
                     /*string output = string.Empty;
                     foreach (ModuleType module in windowManager.GetModules())
@@ -297,7 +298,7 @@ namespace Actions
                     return Response.Finished;
 
                 case Response.ModuleError:
-                    switch(timesTriedToUnloadOnShell)
+                    /*switch(timesTriedToUnloadOnShell)
                     {
                         case 1:
                             shell.Print("You can't unload the module you're on, dummy! How would you then continue? Don't try this again!");
@@ -323,7 +324,7 @@ namespace Actions
                         case 6:
                             windowManager.UnloadOnWindow(windowManager.WindowToIndex[windowManager.ModuleToWindow[ModuleType.Shell]]);
                             break;
-                    }
+                    }*/
                     return Response.Finished;
             }
 
@@ -400,7 +401,7 @@ namespace Actions
                     break;
 
                 case Response.CountError:
-                    shell.Print("Could not list the files on this database since it doesn't have any!");
+                    shell.Print("Could not list the files on this database since it doesn't have any.");
                     break;
             }
 

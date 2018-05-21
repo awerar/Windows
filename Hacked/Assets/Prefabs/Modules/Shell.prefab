@@ -570,10 +570,12 @@ MonoBehaviour:
   content: {fileID: 1567614592590790}
   viewPort: {fileID: 1050524523941094}
   printText: {fileID: 1893636306268042, guid: df14ad3992d36d44a91ac33fd19764ef, type: 2}
-  printList: {fileID: 1473725765117036, guid: 90426fe7f9c1f57409d129f94659ea65, type: 2}
-  row: {fileID: 1066061395954796, guid: 7813a648e499e3d47985c2ad42d89584, type: 2}
-  column: {fileID: 1816309862456784, guid: 8a954ace7b986eb47b57b70fa93a6929, type: 2}
+  printList: {fileID: 1473725765117036, guid: c83708f54651d684b867b64a04bfbcaa, type: 2}
+  row: {fileID: 1066061395954796, guid: d5922c48a7bef444ea5bb54037c8d42e, type: 2}
+  column: {fileID: 1816309862456784, guid: 10db820a08be427488debae2d990f3ff, type: 2}
   listName: {fileID: 1368897055460886, guid: ef105eafe5584f144ae1cb6c5f3a9ad3, type: 2}
+  nameErrorText: Unknown command! Type 'Help' for a list of basic commands!
+  paramErrorText: Wrong ammount of paramaters added! Type 'Help' for more info!
 --- !u!114 &114919464773175350
 MonoBehaviour:
   m_ObjectHideFlags: 1

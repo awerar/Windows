@@ -15,7 +15,7 @@ public class CommandsPageManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		foreach (string doc in CommandHelper.GetAllDocumentationOfType(CommandType.Basic, MachineType.Shell))
+		foreach (string doc in CommandHelper.GetAllFullDocumentationOfType(CommandType.Basic, MachineType.Shell))
         {
             GameObject g = Instantiate(text, content.transform);
             g.GetComponent<Text>().text = doc;
@@ -23,7 +23,7 @@ public class CommandsPageManager : MonoBehaviour {
 
         advancedCommands.SetAsLastSibling();
 
-        foreach (string doc in CommandHelper.GetAllDocumentationOfType(CommandType.Advanced, MachineType.Shell))
+        foreach (string doc in CommandHelper.GetAllFullDocumentationOfType(CommandType.Advanced, MachineType.Shell))
         {
             GameObject g = Instantiate(text, content.transform);
             g.GetComponent<Text>().text = doc;
