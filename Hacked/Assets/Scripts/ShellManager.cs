@@ -127,34 +127,47 @@ public class ShellManager : MonoBehaviour {
         List<string> choppedData = new List<string>(rawData.Split(' '));
         CommandData command = new CommandData();
 
+        //Check so that the command is not an number
         try
         {
-            command.c = (Command)Enum.Parse(typeof(Command), FormatString(choppedData[0]));
-            choppedData.RemoveAt(0);
+            int.Parse(choppedData[0]);
         }
-        catch (ArgumentException)
+        catch (FormatException)
         {
-            Print(nameErrorText);
-            return CommandData.Error;
+
+            try
+            {
+
+                command.c = (Command)Enum.Parse(typeof(Command), FormatString(choppedData[0]));
+                choppedData.RemoveAt(0);
+            }
+            catch (ArgumentException)
+            {
+                Print(nameErrorText);
+                return CommandData.Error;
+            }
+
+            if (!CommandHelper.CommandIsOfType(command.c, CurrentMachine.type))
+            {
+                Print(nameErrorText);
+                return CommandData.Error;
+            }
+
+            if (choppedData.Count != CommandHelper.GetParametersOf(command.c).Count)
+            {
+                Print(paramErrorText);
+                return CommandData.Error;
+            }
+            else
+            {
+                command.parameters = choppedData;
+            }
+
+            return command;
         }
 
-        if (!CommandHelper.CommandIsOfType(command.c, CurrentMachine.type))
-        {
-            Print(nameErrorText);
-            return CommandData.Error;
-        }
-
-        if (choppedData.Count != CommandHelper.GetParametersOf(command.c).Count)
-        {
-            Print(paramErrorText);
-            return CommandData.Error;
-        }
-        else
-        {
-            command.parameters = choppedData;
-        }
-
-        return command;
+        Print(nameErrorText);
+        return CommandData.Error;
     }
 
     public void ExecuteCommand(CommandData commandData)
